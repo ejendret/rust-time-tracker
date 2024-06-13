@@ -3,4 +3,8 @@ name = "rust-time-tracker"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "rust_time_tracker"
+path = "src/libraries/lib.rs"
+
 [dependencies]
