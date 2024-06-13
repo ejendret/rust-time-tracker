@@ -16,7 +16,7 @@ fn test_proj_create() {
     // Test that file is created
     assert!(project_utils::proj_create(file_title).is_ok());
     assert!(file_path.exists());
-    
+
     // Test that trying to create an existing file results in error
     assert!(project_utils::proj_create(file_title).is_err());
     assert!(file_path.exists());
