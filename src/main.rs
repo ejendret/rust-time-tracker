@@ -11,10 +11,6 @@ fn main() {
 
     let first = &args[1];
 
-
-
-
-
     if let Err(e) = project_utils::proj_create(first) {
         println!("[main] error creating project: {}", e);
     }
