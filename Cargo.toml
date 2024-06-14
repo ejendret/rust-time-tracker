@@ -8,3 +8,4 @@ name = "rust_time_tracker"
 path = "src/libraries/lib.rs"
 
 [dependencies]
+users = "0.11"

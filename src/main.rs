@@ -3,7 +3,6 @@
 // use rust_time_tracker::project_utils;
 // use rust_time_tracker::task_utils;
 use rust_time_tracker::config_utils;
-
 // Outside libraries
 // use std::env;
 

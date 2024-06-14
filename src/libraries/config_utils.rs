@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use users::get_current_username;
 // use std::io;
 
 pub fn get_confirmation(query: &str) -> Result<(), String> {
@@ -19,40 +20,65 @@ pub fn get_confirmation(query: &str) -> Result<(), String> {
     }
 }
 
-fn create_directory() -> Result<(), String> {
-    let config_dir = Path::new("/home/ejendret/.tracker");
+fn create_directory(path: &Path) -> Result<(), String> {
+    std::fs::create_dir(path).map_err(|why| format!("[config_utils:create_directory] {}", why))
+}
 
-    std::fs::create_dir(config_dir)
-        .map_err(|why| format!("[config_utils:create_directory] {}", why))
+fn create_file(path: &Path) -> Result<(), String> {
+    // Create file
+    fs::File::create(path).map_err(|why| format!("[config_utils:check_config] {}", why))?;
+
+    // TODO: write something into file
+
+    Ok(())
 }
 
 pub fn check_config() -> Result<(), String> {
-    let config_dir = Path::new("/home/ejendret/.tracker");
-    let config_path = Path::new("/home/ejendret/.tracker/config");
+    // Retrieve username
+    let user = match get_current_username() {
+        Some(username) => Ok(username),
+        None => Err("No user found"),
+    }?;
+
+    let user_str = user
+        .into_string()
+        .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
+    let user = format!("{}", user_str);
+
+    println!("Username is: {}", user);
+
+    let config_dir = format!("/home/{}/.tracker", user);
+    let config_dir_path = Path::new(&config_dir);
+    let config_file = format!("/home/{}/.tracker/config", user);
+    let config_file_path = Path::new(&config_file);
 
     // If no config dir
-    if !Path::exists(config_dir) {
+    if !Path::exists(config_dir_path) {
         // Prompt user to create directory, error if issue or negative
-        get_confirmation(
-            "Configuration directory needed. Create in /home? Enter yes or y to confirm.",
-        )
-        .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
+        let query = format!(
+            "Configuration directory needed. Create at {} ? Enter yes or y to confirm.",
+            config_dir
+        );
+        get_confirmation(&query).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
         // Create dir
-        create_directory().map_err(|why| format!("[config_utils:check_config] {}", why))?;
+        create_directory(config_dir_path)
+            .map_err(|why| format!("[config_utils:check_config] {}", why))?;
 
         println!("Configuration directory created successfully.")
     }
 
     // If no config file
-    if !Path::exists(config_path) {
+    if !Path::exists(config_file_path) {
         // Prompt user to create directory, error if issue or negative
-        get_confirmation("Configuration file needed. Create in /home? Enter yes or y to confirm.")
-            .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
+        let query = format!(
+            "Configuration file needed. Create at {} ? Enter yes or y to confirm.",
+            config_file
+        );
+        get_confirmation(&query).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
-        // Create file
-        fs::File::create(config_path)
-            .map_err(|why| format!("[config_utils:check_config] {}", why))?;
+        create_file(config_file_path)
+            .map_err(|why| format!("[config_utils:check_config: {}", why))?;
 
         println!("Configuration file created successfully.")
     }
