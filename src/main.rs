@@ -19,6 +19,6 @@ fn main() {
 
     let _ = match config_utils::check_config() {
         Ok(()) => println!("Success"),
-        Err(why) => println!("Failed with error: {}", why)
+        Err(why) => println!("Failed with error: {}", why),
     };
 }

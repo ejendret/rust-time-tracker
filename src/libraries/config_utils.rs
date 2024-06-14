@@ -1,5 +1,5 @@
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 // use std::io;
 
 pub fn get_confirmation(query: &str) -> Result<(), String> {
@@ -8,12 +8,9 @@ pub fn get_confirmation(query: &str) -> Result<(), String> {
     let mut input = String::new();
 
     // Get user input
-    std::io::stdin().read_line(&mut input).map_err(|why| {
-        format!(
-            "[config_utils:get_confirmation] {}",
-            why
-        )
-    })?;
+    std::io::stdin()
+        .read_line(&mut input)
+        .map_err(|why| format!("[config_utils:get_confirmation] {}", why))?;
 
     // If yes or y, return success, else error
     match input.trim().to_lowercase().as_str() {
@@ -25,12 +22,8 @@ pub fn get_confirmation(query: &str) -> Result<(), String> {
 fn create_directory() -> Result<(), String> {
     let config_dir = Path::new("/home/ejendret/.tracker");
 
-    std::fs::create_dir(config_dir).map_err(|why| {
-        format!(
-            "[config_utils:create_directory] {}",
-            why
-        )
-    })
+    std::fs::create_dir(config_dir)
+        .map_err(|why| format!("[config_utils:create_directory] {}", why))
 }
 
 pub fn check_config() -> Result<(), String> {
@@ -40,20 +33,13 @@ pub fn check_config() -> Result<(), String> {
     // If no config dir
     if !Path::exists(config_dir) {
         // Prompt user to create directory, error if issue or negative
-        get_confirmation("Configuration directory needed. Create in /home? Enter yes or y to confirm.").map_err(|why| {
-            format!(
-                "[config_utils:check_config]: {}",
-                why
-            )
-        })?;
+        get_confirmation(
+            "Configuration directory needed. Create in /home? Enter yes or y to confirm.",
+        )
+        .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
         // Create dir
-        create_directory().map_err(|why| {
-            format!(
-                "[config_utils:check_config] {}",
-                why
-            )
-        })?;
+        create_directory().map_err(|why| format!("[config_utils:check_config] {}", why))?;
 
         println!("Configuration directory created successfully.")
     }
@@ -61,20 +47,12 @@ pub fn check_config() -> Result<(), String> {
     // If no config file
     if !Path::exists(config_path) {
         // Prompt user to create directory, error if issue or negative
-        get_confirmation("Configuration file needed. Create in /home? Enter yes or y to confirm.").map_err(|why| {
-            format!(
-                "[config_utils:check_config]: {}",
-                why
-            )
-        })?;
+        get_confirmation("Configuration file needed. Create in /home? Enter yes or y to confirm.")
+            .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
         // Create file
-        fs::File::create(config_path).map_err(|why| {
-            format!(
-                "[config_utils:check_config] {}",
-                why
-            )
-        })?;
+        fs::File::create(config_path)
+            .map_err(|why| format!("[config_utils:check_config] {}", why))?;
 
         println!("Configuration file created successfully.")
     }
