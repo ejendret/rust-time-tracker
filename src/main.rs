@@ -17,9 +17,8 @@ fn main() {
     //     println!("[main] error creating project: {}", e);
     // }
 
-    match config_utils::get_confirmation("testing?") {
-        Ok(()) => println!("Confirmation"),
-        Err(why) => println!("[main] failed to get confirmation: {}", why)
-
+    let _ = match config_utils::check_config() {
+        Ok(()) => println!("Success"),
+        Err(why) => println!("Failed with error: {}", why)
     };
 }
