@@ -17,7 +17,12 @@ fn main() {
     // }
 
     let _ = match config_utils::check_config() {
-        Ok(()) => println!("Success"),
+        Ok(current_proj) => println!("Current project is: {}", current_proj),
         Err(why) => println!("Failed with error: {}", why),
+    };
+
+    let _ = match config_utils::change_config("donkey kong".to_string()) {
+        Ok(()) => println!("Success"),
+        Err(why) => println!("Curses and damnation upon ye {}", why),
     };
 }

@@ -1,7 +1,7 @@
 use std::fs;
+use std::io::prelude::*;
 use std::path::Path;
 use users::get_current_username;
-// use std::io;
 
 pub fn get_confirmation(query: &str) -> Result<(), String> {
     // Prompt the user with query
@@ -11,7 +11,7 @@ pub fn get_confirmation(query: &str) -> Result<(), String> {
     // Get user input
     std::io::stdin()
         .read_line(&mut input)
-        .map_err(|why| format!("[config_utils:get_confirmation] {}", why))?;
+        .map_err(|why| format!("[config_utils:get_confirmation]: {}", why))?;
 
     // If yes or y, return success, else error
     match input.trim().to_lowercase().as_str() {
@@ -21,19 +21,22 @@ pub fn get_confirmation(query: &str) -> Result<(), String> {
 }
 
 fn create_directory(path: &Path) -> Result<(), String> {
-    std::fs::create_dir(path).map_err(|why| format!("[config_utils:create_directory] {}", why))
+    std::fs::create_dir(path).map_err(|why| format!("[config_utils:create_directory]: {}", why))
 }
 
 fn create_file(path: &Path) -> Result<(), String> {
     // Create file
-    fs::File::create(path).map_err(|why| format!("[config_utils:check_config] {}", why))?;
+    let mut config_file =
+        fs::File::create(path).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
-    // TODO: write something into file
-
+    // Write current proj = None to file
+    config_file
+        .write_all(b"none")
+        .map_err(|why| format!("[config_utils:create_file]: {}", why))?;
     Ok(())
 }
 
-pub fn check_config() -> Result<(), String> {
+pub fn check_config() -> Result<String, String> {
     // Retrieve username
     let user = match get_current_username() {
         Some(username) => Ok(username),
@@ -45,11 +48,10 @@ pub fn check_config() -> Result<(), String> {
         .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
     let user = format!("{}", user_str);
 
-    println!("Username is: {}", user);
-
+    // Construct paths
     let config_dir = format!("/home/{}/.tracker", user);
     let config_dir_path = Path::new(&config_dir);
-    let config_file = format!("/home/{}/.tracker/config", user);
+    let config_file = format!("/home/{}/.tracker/config.txt", user);
     let config_file_path = Path::new(&config_file);
 
     // If no config dir
@@ -63,7 +65,7 @@ pub fn check_config() -> Result<(), String> {
 
         // Create dir
         create_directory(config_dir_path)
-            .map_err(|why| format!("[config_utils:check_config] {}", why))?;
+            .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
         println!("Configuration directory created successfully.")
     }
@@ -83,11 +85,38 @@ pub fn check_config() -> Result<(), String> {
         println!("Configuration file created successfully.")
     }
 
-    Ok(())
+    // Read from config
+    let mut config_file = fs::File::open(config_file_path)
+        .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
+    let mut current_proj = String::new();
+    config_file
+        .read_to_string(&mut current_proj)
+        .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
+
+    // Return current project
+    Ok(current_proj)
 }
 
-// fn retrieve_config() -> Result<(), String> {
-//     let config_path = Path::new("/home/.tracker/config");
+pub fn change_config(new_proj: String) -> Result<(), String> {
+    // Retrieve username
+    let user = match get_current_username() {
+        Some(username) => Ok(username),
+        None => Err("No user found"),
+    }?;
 
-//     // Try to read config file
-// }
+    let user_str = user
+        .into_string()
+        .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
+    let user = format!("{}", user_str);
+
+    // Get path
+    let config_file = format!("/home/{}/.tracker/config.txt", user);
+    let config_file_path = Path::new(&config_file);
+
+    // Open file and write string
+    let mut config_file = fs::File::create(config_file_path)
+        .map_err(|why| format!("[config_utils:change_config]: {}", why))?;
+    config_file
+        .write_all(new_proj.as_bytes())
+        .map_err(|why| format!("[config_utils:change_config]: {}", why))
+}
