@@ -24,7 +24,7 @@ fn create_directory(path: &Path) -> Result<(), String> {
     std::fs::create_dir(path).map_err(|why| format!("[config_utils:create_directory]: {}", why))
 }
 
-fn create_file(path: &Path) -> Result<(), String> {
+fn create_config(path: &Path) -> Result<(), String> {
     // Create file
     let mut config_file =
         fs::File::create(path).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
@@ -79,7 +79,7 @@ pub fn check_config() -> Result<String, String> {
         );
         get_confirmation(&query).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
-        create_file(config_file_path)
+        create_config(config_file_path)
             .map_err(|why| format!("[config_utils:check_config: {}", why))?;
 
         println!("Configuration file created successfully.")
