@@ -1,8 +1,8 @@
 // src/main.rs
 // My libraries
 // use rust_time_tracker::project_utils;
-// use rust_time_tracker::task_utils;
 use rust_time_tracker::config_utils;
+use rust_time_tracker::task_utils;
 // Outside libraries
 // use std::env;
 
@@ -16,13 +16,13 @@ fn main() {
     //     println!("[main] error creating project: {}", e);
     // }
 
-    let _ = match config_utils::check_config() {
-        Ok(current_proj) => println!("Current project is: {}", current_proj),
-        Err(why) => println!("Failed with error: {}", why),
-    };
+    // let _ = match config_utils::check_config() {
+    //     Ok(current_proj) => println!("Current project is: {}", current_proj),
+    //     Err(why) => println!("Failed with error: {}", why),
+    // };
 
-    let _ = match config_utils::change_config("donkey kong".to_string()) {
-        Ok(()) => println!("Success"),
-        Err(why) => println!("Curses and damnation upon ye {}", why),
-    };
+    // let _ = match config_utils::change_config("donkey kong".to_string()) {
+    //     Ok(()) => println!("Success"),
+    //     Err(why) => println!("Curses and damnation upon ye {}", why),
+    // };
 }

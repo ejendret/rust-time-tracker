@@ -1,7 +1,13 @@
 // src/project_utils.rs
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Project {
+    title: String,
+}
 
 pub fn proj_create(title: &str) -> Result<(), String> {
     let proj_path = format!(".{}", title);
