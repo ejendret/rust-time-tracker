@@ -3,6 +3,19 @@ use std::io::prelude::*;
 use std::path::Path;
 use users::get_current_username;
 
+pub fn get_config_location() -> Result<String, String> {
+    // Retrieve username
+    let user = match get_current_username() {
+        Some(username) => Ok(username),
+        None => Err("Unable to retrieve username."),
+    }?;
+
+    let user_str = user
+        .into_string()
+        .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
+    Ok(format!("/home{}/.tracker", user_str)) 
+}
+
 pub fn get_confirmation(query: &str) -> Result<(), String> {
     // Prompt the user with query
     println!("{}", query);
@@ -37,21 +50,10 @@ fn create_config(path: &Path) -> Result<(), String> {
 }
 
 pub fn check_config() -> Result<String, String> {
-    // Retrieve username
-    let user = match get_current_username() {
-        Some(username) => Ok(username),
-        None => Err("No user found"),
-    }?;
-
-    let user_str = user
-        .into_string()
-        .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
-    let user = format!("{}", user_str);
-
     // Construct paths
-    let config_dir = format!("/home/{}/.tracker", user);
+    let config_dir = get_config_location()?;
     let config_dir_path = Path::new(&config_dir);
-    let config_file = format!("/home/{}/.tracker/config.txt", user);
+    let config_file = format!("{}/config.txt", config_dir);
     let config_file_path = Path::new(&config_file);
 
     // If no config dir
@@ -98,19 +100,8 @@ pub fn check_config() -> Result<String, String> {
 }
 
 pub fn change_config(new_proj: String) -> Result<(), String> {
-    // Retrieve username
-    let user = match get_current_username() {
-        Some(username) => Ok(username),
-        None => Err("No user found"),
-    }?;
-
-    let user_str = user
-        .into_string()
-        .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
-    let user = format!("{}", user_str);
-
     // Get path
-    let config_file = format!("/home/{}/.tracker/config.txt", user);
+    let config_file = format!("{}/config", get_config_location()?);
     let config_file_path = Path::new(&config_file);
 
     // Open file and write string
