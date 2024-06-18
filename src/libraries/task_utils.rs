@@ -1,11 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Session {
     pub start_time: DateTime<Utc>,
     pub end_time: DateTime<Utc>,
-    duration: i64
+    duration: i64,
 }
 
 impl Session {
@@ -18,7 +18,7 @@ impl Session {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Task {
     pub title: String,
     pub sessions: Vec<Session>,
@@ -27,11 +27,11 @@ pub struct Task {
 
 impl Task {
     pub fn new(title: String) -> Task {
-       Task {
-        title: title,
-        sessions: Vec::new(),
-        total_duration: 0,
-       }
+        Task {
+            title: title,
+            sessions: Vec::new(),
+            total_duration: 0,
+        }
     }
 
     pub fn start_session(&mut self) {
@@ -49,10 +49,10 @@ impl Task {
         let length = self.sessions.len();
         if length > 0 && self.sessions[length - 1].duration == 0 {
             self.sessions[length - 1].end_time = end;
-            self.sessions[length - 1].duration = (end - self.sessions[length - 1].start_time).num_seconds();
+            self.sessions[length - 1].duration =
+                (end - self.sessions[length - 1].start_time).num_seconds();
         } else {
             println!("No ongoing session to end.");
         }
     }
-
 }
