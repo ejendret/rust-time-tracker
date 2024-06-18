@@ -1,6 +1,6 @@
 // src/project_utils.rs
 use serde::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::BufWriter;
 use std::path::Path;
 use crate::task_utils::Task;
@@ -22,28 +22,31 @@ impl Project {
     }
 }
 
-pub fn create_project(title: &str, path: &Path) -> Result<(), String> {
+pub fn create_project(title: &str, path: &Path) -> Result<String, String> {
     // Create and serialize project structure
     let proj = Project::new(title.to_string());
        
-    // Try to create project file
-    let proj_file = File::create_new(path).map_err(|why| {
-        format!(
-            "[project_utils:proj_create] couldn't create {}: {}",
-            path.display(),
-            why
-        )
-    })?;
-    
-    // Try to write project to file
-    let mut writer = BufWriter::new(proj_file);
-    serde_json::to_writer(&mut writer, &proj).map_err(|why| {
-        format!(
-            "[project_utils:proj_create] couldn't write to {}: {}",
-            path.display(),
-            why
-        )
-    })?;
+    // Try to create project file 
+    match File::create_new(path) {
+        Ok(proj_file) => {
+            // Try to write project to file
+            let mut writer = BufWriter::new(proj_file);
+            match serde_json::to_writer(&mut writer, &proj) {
+                Ok(_) => Ok(format!("Created project {} at {}", title, path.display())),
+                Err(e) => Err(format!("Failed to write project data to file {} {}", path.display(), e)),
+            }
+        },
+        Err(e) => {
+            Err(format!("Failed to create project file {}", e))
+        }
+    }
+}
 
-    Ok(())
+pub fn retrieve_project(path: &Path) -> Project {
+    let file = OpenOptions::new()
+        .read(true)
+        .open(path)
+        .expect("Could not read file");
+    let project: Project = serde_json::from_reader(file).unwrap();
+    project
 }

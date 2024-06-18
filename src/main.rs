@@ -1,9 +1,9 @@
-use std::path::Path;
+use std::{fs::File, io::BufWriter, path::Path};
 
 // src/main.rs
 // My libraries
 // use rust_time_tracker::project_utils;
-use rust_time_tracker::{project_utils::{create_project, Project}, task_utils::{Session, Task}};
+use rust_time_tracker::{project_utils::{create_project, retrieve_project, Project}, task_utils::{Session, Task}};
 // Outside libraries
 use chrono::Utc;
 // use std::env;
@@ -16,14 +16,16 @@ fn main() {
     proj.tasks.push(task);
     let data = serde_json::to_string(&proj);
     match data {
-        Ok(content) => println!("{}", content),
+        Ok(_content) => println!(""),
         Err(e) => println!("{}", e)
     }
     let title = "testing";
     let path = format!("/home/ejendret/.tracker/{}.txt", title);
     let path = Path::new(&path);
     match create_project(title, path) {
-        Ok(()) => println!("YAY"),
-        Err(e) => println!("NO: {}", e)
+        Ok(status) => println!("{}", status),
+        Err(status) => println!("{}", status),
     }
+    let project = retrieve_project(path);
+    // println!("{:?}", project);
 }
