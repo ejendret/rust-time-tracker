@@ -42,6 +42,24 @@ pub fn create_project(title: &str, path: &Path) -> Result<String, String> {
     }
 }
 
+pub fn write_project(path: &Path, proj: &Project) -> Result<String, String> {
+    match OpenOptions::new()
+        .write(true)   // Enable writing
+        .truncate(true) // Truncate the file upon opening
+        .open(path) {  // Do not create if it doesn't exist
+        Ok(proj_file) => {
+            let mut writer = BufWriter::new(proj_file);
+            match serde_json::to_writer(&mut writer, &proj) {
+                Ok(_) => Ok(format!("Updated project {}", proj.title)),
+                Err(e) => Err(format!("Failed to update project {}: {}", proj.title, e)),
+            }
+        },
+        Err(e) => {
+            Err(format!("Failed to open project {}: {}. Ensure the file exists before updating.", proj.title, e))
+        }
+    }
+}
+
 pub fn retrieve_project(path: &Path) -> Project {
     let file = OpenOptions::new()
         .read(true)
