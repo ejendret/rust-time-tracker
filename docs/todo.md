@@ -1,9 +1,8 @@
 # TODO
 - [ ] Command line parsing
-- [ ] Create project file
-- [ ] Define task structure
-- [ ] Define project structure
+- [X] Create project file
+- [X] Define task structure
+- [X] Define project structure
 - [ ] Writing a task to a file
-- [ ] Writing a project to a structure
-- [ ] Reading a task from a file
-- [ ] Reading a project from a file
+- [X] Writing a project to a file
+- [X] Reading a project from a file
