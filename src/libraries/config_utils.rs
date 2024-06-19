@@ -1,7 +1,68 @@
-use std::fs;
-use std::io::prelude::*;
+use std::fs::{File};
+use std::{fs, io::BufWriter};
+use std::io::{self, prelude::*};
 use std::path::Path;
+use serde::{Deserialize, Serialize};
+use serde_json::{from_reader, to_writer_pretty};
 use users::get_current_username;
+
+#[derive(Serialize, Deserialize, PartialEq)]
+pub struct Config {
+    current_proj: String,
+    projects: Vec<String>,
+}
+
+impl Config {
+
+    pub fn new(current_proj: Option<String>, projects: Option<Vec<String>>) -> Config {
+        Config {
+            current_proj: current_proj.unwrap_or_else(|| "none".to_string()),
+            projects: projects.unwrap_or_else(|| vec![]),
+        }
+    }
+
+    pub fn from_file(path: &str) -> io::Result<Self> {
+        let config_file = File::open(path)?;
+        let config: Config = from_reader(config_file)?;
+        Ok(config)
+    }
+
+    pub fn to_file(&self, path: &str) -> io::Result<()> {
+        let config_file = File::create(path)?;
+        to_writer_pretty(config_file, &self)?;
+        Ok(())
+    }
+
+    pub fn set_current_proj(&mut self, new_proj: String) -> Result<(), String> {
+        if self.projects.contains(&new_proj) {
+            self.current_proj = new_proj;
+            Ok(())
+        } else {
+            Err(format!("No project by name {}", new_proj))
+        }
+    }
+
+    pub fn get_current_proj(&self) -> &str {
+        &self.current_proj
+    }
+
+    pub fn add_project(&mut self, new_proj: String) {
+        if !self.projects.contains(&new_proj) {
+            self.projects.push(new_proj);
+        }
+    }
+
+    pub fn remove_project(&mut self, proj: &str) {
+        self.projects.retain(|x| x != proj);
+        if self.current_proj == proj {
+            self.current_proj = "none".to_string();
+        }
+    }
+
+    pub fn get_projects(&self) -> &Vec<String> {
+        &self.projects
+    }
+}
 
 pub fn get_config_location() -> Result<String, String> {
     // Retrieve username
@@ -15,6 +76,8 @@ pub fn get_config_location() -> Result<String, String> {
         .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
     Ok(format!("/home{}/.tracker", user_str)) 
 }
+
+
 
 pub fn get_confirmation(query: &str) -> Result<(), String> {
     // Prompt the user with query
@@ -39,14 +102,17 @@ fn create_directory(path: &Path) -> Result<(), String> {
 
 fn create_config(path: &Path) -> Result<(), String> {
     // Create file
-    let mut config_file =
+    let config_file =
         fs::File::create(path).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
-    // Write current proj = None to file
-    config_file
-        .write_all(b"none")
-        .map_err(|why| format!("[config_utils:create_file]: {}", why))?;
-    Ok(())
+    // Create a config
+    let config = Config::new(None, None);
+
+    let mut writer = BufWriter::new(config_file);
+    match serde_json::to_writer(&mut writer, &config) {
+        Ok(_) => Ok(println!("Created config file at {}", path.display())),
+        Err(e) => Err(format!("{}", e)),
+    }
 }
 
 pub fn check_config() -> Result<String, String> {
@@ -97,17 +163,4 @@ pub fn check_config() -> Result<String, String> {
 
     // Return current project
     Ok(current_proj)
-}
-
-pub fn change_config(new_proj: String) -> Result<(), String> {
-    // Get path
-    let config_file = format!("{}/config", get_config_location()?);
-    let config_file_path = Path::new(&config_file);
-
-    // Open file and write string
-    let mut config_file = fs::File::create(config_file_path)
-        .map_err(|why| format!("[config_utils:change_config]: {}", why))?;
-    config_file
-        .write_all(new_proj.as_bytes())
-        .map_err(|why| format!("[config_utils:change_config]: {}", why))
 }
