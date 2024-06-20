@@ -1,6 +1,6 @@
 use std::fs::{File};
 use std::{fs, io::BufWriter};
-use std::io::{self, prelude::*};
+use std::io::{self, prelude::*, stdin};
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_writer_pretty};
@@ -77,15 +77,14 @@ pub fn get_config_location() -> Result<String, String> {
     Ok(format!("/home{}/.tracker", user_str)) 
 }
 
-
-
-pub fn get_confirmation(query: &str) -> Result<(), String> {
+pub fn get_confirmation<R: Read>(query: &str, reader: R) -> Result<(), String> {
     // Prompt the user with query
     println!("{}", query);
     let mut input = String::new();
 
     // Get user input
-    std::io::stdin()
+    let mut buffered = io::BufReader::new(reader);
+    buffered
         .read_line(&mut input)
         .map_err(|why| format!("[config_utils:get_confirmation]: {}", why))?;
 
@@ -100,7 +99,7 @@ fn create_directory(path: &Path) -> Result<(), String> {
     std::fs::create_dir(path).map_err(|why| format!("[config_utils:create_directory]: {}", why))
 }
 
-fn create_config(path: &Path) -> Result<(), String> {
+fn create_config(path: &str) -> Result<(), String> {
     // Create file
     let config_file =
         fs::File::create(path).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
@@ -110,14 +109,13 @@ fn create_config(path: &Path) -> Result<(), String> {
 
     let mut writer = BufWriter::new(config_file);
     match serde_json::to_writer(&mut writer, &config) {
-        Ok(_) => Ok(println!("Created config file at {}", path.display())),
+        Ok(_) => Ok(println!("Created config file at {}", path)),
         Err(e) => Err(format!("{}", e)),
     }
 }
 
-pub fn check_config() -> Result<String, String> {
+pub fn check_config(config_dir: String) -> Result<(), String> {
     // Construct paths
-    let config_dir = get_config_location()?;
     let config_dir_path = Path::new(&config_dir);
     let config_file = format!("{}/config.txt", config_dir);
     let config_file_path = Path::new(&config_file);
@@ -129,7 +127,7 @@ pub fn check_config() -> Result<String, String> {
             "Configuration directory needed. Create at {} ? Enter yes or y to confirm.",
             config_dir
         );
-        get_confirmation(&query).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
+        get_confirmation(&query, stdin()).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
         // Create dir
         create_directory(config_dir_path)
@@ -145,22 +143,12 @@ pub fn check_config() -> Result<String, String> {
             "Configuration file needed. Create at {} ? Enter yes or y to confirm.",
             config_file
         );
-        get_confirmation(&query).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
+        get_confirmation(&query, stdin()).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
-        create_config(config_file_path)
+        create_config(&config_file)
             .map_err(|why| format!("[config_utils:check_config: {}", why))?;
 
-        println!("Configuration file created successfully.")
+        println!("Configuration file created successfully.");
     }
-
-    // Read from config
-    let mut config_file = fs::File::open(config_file_path)
-        .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
-    let mut current_proj = String::new();
-    config_file
-        .read_to_string(&mut current_proj)
-        .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
-
-    // Return current project
-    Ok(current_proj)
+    Ok(())
 }

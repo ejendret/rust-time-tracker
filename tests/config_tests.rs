@@ -1,4 +1,6 @@
-use rust_time_tracker::config_utils::Config;
+use std::io::Cursor;
+
+use rust_time_tracker::config_utils::{get_confirmation, Config};
 
 #[test]
 fn test_valid_get_set() {
@@ -22,7 +24,16 @@ fn test_valid_get_set() {
 }
 
 #[test]
-fn test_read_write() {
+fn test_invalid_get_set() {
+    // Create a config and populate the fields
+    let mut config = Config::new(None, None);
+    assert!(config.set_current_proj("test".to_string()).is_err());
+    config.add_project("test".to_string());
+    config.add_project("test".to_string());
+}
+
+#[test]
+fn test_to_from() {
     // Create a config and populate the fields
     let mut before_config = Config::new(None, None);
     
@@ -40,4 +51,15 @@ fn test_read_write() {
     // Read from the file into a new config and compare
     let after_config = Config::from_file(path).expect("Failed to read from file.");
     assert!(before_config == after_config);
+}
+
+#[test]
+fn test_get_confirmation() {
+    assert!(get_confirmation("This is a test query", Cursor::new(b"negative")).is_err());
+    assert!(get_confirmation("This is a test query", Cursor::new(b"yes")).is_ok());
+}
+
+#[test]
+fn test_create_config() {
+    // let path = format!("tests/files/");
 }
