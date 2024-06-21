@@ -1,9 +1,8 @@
-use std::fs::{File};
-use std::{fs, io::BufWriter};
-use std::io::{self, prelude::*, stdin};
-use std::path::Path;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_writer_pretty};
+use std::fs::File;
+use std::io::{self, prelude::*};
+use std::path::Path;
 use users::get_current_username;
 
 #[derive(Serialize, Deserialize, PartialEq)]
@@ -13,7 +12,6 @@ pub struct Config {
 }
 
 impl Config {
-
     pub fn new(current_proj: Option<String>, projects: Option<Vec<String>>) -> Config {
         Config {
             current_proj: current_proj.unwrap_or_else(|| "none".to_string()),
@@ -74,7 +72,7 @@ pub fn get_config_location() -> Result<String, String> {
     let user_str = user
         .into_string()
         .unwrap_or_else(|os_string| os_string.to_string_lossy().into_owned());
-    Ok(format!("/home{}/.tracker", user_str)) 
+    Ok(format!("/home/{}/.tracker", user_str))
 }
 
 pub fn get_confirmation<R: Read>(query: &str, reader: R) -> Result<(), String> {
@@ -99,36 +97,13 @@ fn create_directory(path: &Path) -> Result<(), String> {
     std::fs::create_dir(path).map_err(|why| format!("[config_utils:create_directory]: {}", why))
 }
 
-fn create_config(path: &str) -> Result<(), String> {
-    // Create file
-    let config_file =
-        fs::File::create(path).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
-
-    // Create a config
-    let config = Config::new(None, None);
-
-    let mut writer = BufWriter::new(config_file);
-    match serde_json::to_writer(&mut writer, &config) {
-        Ok(_) => Ok(println!("Created config file at {}", path)),
-        Err(e) => Err(format!("{}", e)),
-    }
-}
-
-pub fn check_config(config_dir: String) -> Result<(), String> {
-    // Construct paths
+pub fn build_config(config_dir: &str) -> Result<(), String> {
     let config_dir_path = Path::new(&config_dir);
-    let config_file = format!("{}/config.txt", config_dir);
+    let config_file = format!("{}/config.JSON", config_dir);
     let config_file_path = Path::new(&config_file);
 
     // If no config dir
     if !Path::exists(config_dir_path) {
-        // Prompt user to create directory, error if issue or negative
-        let query = format!(
-            "Configuration directory needed. Create at {} ? Enter yes or y to confirm.",
-            config_dir
-        );
-        get_confirmation(&query, stdin()).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
-
         // Create dir
         create_directory(config_dir_path)
             .map_err(|why| format!("[config_utils:check_config]: {}", why))?;
@@ -139,16 +114,22 @@ pub fn check_config(config_dir: String) -> Result<(), String> {
     // If no config file
     if !Path::exists(config_file_path) {
         // Prompt user to create directory, error if issue or negative
-        let query = format!(
-            "Configuration file needed. Create at {} ? Enter yes or y to confirm.",
-            config_file
-        );
-        get_confirmation(&query, stdin()).map_err(|why| format!("[config_utils:check_config]: {}", why))?;
 
-        create_config(&config_file)
-            .map_err(|why| format!("[config_utils:check_config: {}", why))?;
+        let config = Config::new(None, None);
+        config
+            .to_file(&config_file)
+            .map_err(|why| format!("Failed to create config file {}", why))?;
 
         println!("Configuration file created successfully.");
     }
     Ok(())
+}
+
+pub fn config_present(config_dir: &str) -> bool {
+    // Construct paths
+    let config_dir_path = Path::new(&config_dir);
+    let config_file = format!("{}/config.JSON", config_dir);
+    let config_file_path = Path::new(&config_file);
+
+    config_dir_path.exists() && config_file_path.exists()
 }
