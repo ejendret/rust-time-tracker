@@ -53,7 +53,7 @@ fn test_to_from() {
         .set_current_proj("test project 5".to_string())
         .expect("Failed to set current project.");
 
-    let path = "tests/files/config.JSON";
+    let path = "tests/config.JSON";
 
     // Write the config to a file
     before_config
@@ -75,9 +75,9 @@ fn test_get_confirmation() {
 
 #[test]
 fn test_build_check_config() {
-    let dir = "tests/files/check_config";
+    let dir = "tests/check_config";
     let dir_path = Path::new(dir);
-    let file = "tests/files/check_config/config.JSON";
+    let file = "tests/check_config/config.JSON";
     let file_path = Path::new(file);
 
     // If testing directory exists, remove
