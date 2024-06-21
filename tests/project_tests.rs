@@ -1,5 +1,5 @@
 use std::{
-    fs::{self, File},
+    fs::{self, remove_file, File},
     path::Path,
 };
 
@@ -69,4 +69,6 @@ fn test_proj_io() {
 
     // Compare projects
     assert!(test_proj == proj);
+
+    remove_file(file_path).expect("Should not fail");
 }

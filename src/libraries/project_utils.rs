@@ -22,7 +22,7 @@ impl Project {
     }
 }
 
-pub fn create_project(title: &str, path: &Path) -> Result<String, String> {
+pub fn create_project(title: &str, path: &Path) -> Result<(), String> {
     // Create and serialize project structure
     let proj = Project::new(title.to_string());
 
@@ -32,7 +32,7 @@ pub fn create_project(title: &str, path: &Path) -> Result<String, String> {
             // Try to write project to file
             let mut writer = BufWriter::new(proj_file);
             match serde_json::to_writer(&mut writer, &proj) {
-                Ok(_) => Ok(format!("Created project {} at {}", title, path.display())),
+                Ok(_) => Ok(println!("Created project {} at {}", title, path.display())),
                 Err(e) => Err(format!(
                     "Failed to write project data to file {} {}",
                     path.display(),

@@ -20,10 +20,10 @@ fn main() {
     let title = "testing";
     let path = format!("/home/ejendret/.tracker/{}.txt", title);
     let path = Path::new(&path);
-    match create_project(title, path) {
-        Ok(status) => println!("{}", status),
-        Err(status) => println!("{}", status),
+    if let Err(e) = create_project(title, path) {
+        println!("{}", e);
     }
+
     println!("Before: {:?}", read_project(path));
     match write_project(path, &proj) {
         Ok(status) => println!("{}", status),
