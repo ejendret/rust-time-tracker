@@ -2,21 +2,39 @@
 pub enum Command {
     Invalid,
     Help,
-    ProjecCreate,
-    ProjctDelete,
     ProjectView,
+    ProjectList,
+    ProjecCreate,
+    ProjectDelete,
+    ProjectCheckout,
 }
 
 pub fn process_args(args: &Vec<String>) -> Command {
-    match args.len() {
-        // One argument
-        2 => {
-            match args[1].as_str() {
-                "help" => Command::Help,
+    match args[0].as_str() {
+        "help" => Command::Help,
+        "project" => {
+            match args.len() {
+                2 => {
+                    match args[1].as_str() {
+                        "view" => Command::ProjectView,
+                        "list" => Command::ProjectList,
+                        _ => Command::Invalid
+                    }
+                }
+                3 => {
+                    match args[1].as_str() {
+                        "create" => Command::ProjecCreate,
+                        "delete" => Command::ProjectDelete,
+                        "checkout" => Command::ProjectCheckout,
+                        _ => Command::Invalid
+                    }
+                }
                 _ => Command::Invalid
             }
         }
-        // Two arguments
-        _ => Command::Invalid
+        "task" => {
+           Command::Invalid
         }
+        _ => Command::Invalid
+    }
 }
