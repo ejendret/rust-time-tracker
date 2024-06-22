@@ -4,7 +4,7 @@ pub enum Command {
     Help,
     ProjectView,
     ProjectList,
-    ProjecCreate,
+    ProjectCreate,
     ProjectDelete,
     ProjectCheckout,
 }
@@ -23,7 +23,7 @@ pub fn process_args(args: &Vec<String>) -> Command {
                 }
                 3 => {
                     match args[1].as_str() {
-                        "create" => Command::ProjecCreate,
+                        "create" => Command::ProjectCreate,
                         "delete" => Command::ProjectDelete,
                         "checkout" => Command::ProjectCheckout,
                         _ => Command::Invalid
