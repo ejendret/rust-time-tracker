@@ -7,6 +7,12 @@ pub enum Command {
     ProjectCreate,
     ProjectDelete,
     ProjectCheckout,
+    TaskView,
+    TaskList,
+    TaskCreate,
+    TaskDelete,
+    TaskStart,
+    TaskStop
 }
 
 pub fn process_args(args: &Vec<String>) -> Command {
@@ -33,7 +39,24 @@ pub fn process_args(args: &Vec<String>) -> Command {
             }
         }
         "task" => {
-           Command::Invalid
+            match args.len() {
+                2 => {
+                    match args[1].as_str() {
+                        "view" => Command::TaskView,
+                        "stop" => Command::TaskStop,
+                        "start" => Command::TaskStart,
+                        _ => Command::Invalid
+                    }
+                }
+                3 => {
+                    match args[1].as_str() {
+                        "create" => Command::TaskCreate,
+                        "delete" => Command::TaskDelete,
+                        _ => Command::Invalid
+                    }
+                }
+                _ => Command::Invalid
+            }
         }
         _ => Command::Invalid
     }
