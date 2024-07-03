@@ -6,3 +6,4 @@
 - [ ] Writing a task to a file
 - [X] Writing a project to a file
 - [X] Reading a project from a file
+- [ ] More comprehensive testing
