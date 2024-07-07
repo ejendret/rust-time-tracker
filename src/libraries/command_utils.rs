@@ -8,14 +8,13 @@ pub enum Command {
     ProjectDelete,
     ProjectCheckout,
     TaskView,
-    TaskList,
     TaskCreate,
     TaskDelete,
     TaskStart,
     TaskStop
 }
 
-pub fn process_args(args: &Vec<String>) -> Command {
+pub fn parse_args(args: &Vec<String>) -> Command {
     match args[0].as_str() {
         "help" => Command::Help,
         "project" => {
